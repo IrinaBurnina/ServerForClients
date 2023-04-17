@@ -5,31 +5,57 @@ public class Client {
     public static boolean exit;
 
     public static void main(String[] args) throws InterruptedException {
-        Thread client1 = new Thread(clientActs());
-        Thread client2 = new Thread(clientActs());
-        client1.start();
-        client2.start();
+        Thread sending = new Thread(clientSendMessage());
+        Thread getting = new Thread(clientGetMessage());
+        sending.start();
+        getting.start();
     }
 
-    public static Runnable clientActs() {
+    public static Runnable clientSendMessage() {
         return () -> {
             String host = "netology.homework";
             try (Socket clientSocket = new Socket(host, Integer.parseInt(portNumberFromFile()));
                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                  BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-                answer(out, in, reader);
-                while (true) {
-                    answer(out, in, reader);
+                final String name = reader.readLine();//ответ серверу
+                out.println(name);
+                if (name.equals("/exit")) {
+                    exit = true;
+                }
+                while (!clientSocket.isClosed()) {
+                    String answerText = reader.readLine();
+                    out.println(name + " ==== " + answerText);
+                    if (answerText.equals("/exit")) {
+                        exit = true;
+                    }
                     if (exit) {
-                        in.close();
                         out.close();
                         clientSocket.close();
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (InterruptedException e) {
+            }
+        };
+    }
+
+    public static Runnable clientGetMessage() {
+        return () -> {
+            String host = "netology.homework";
+            try (Socket clientSocket = new Socket(host, Integer.parseInt(portNumberFromFile()));
+                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
+                String textFromServer = in.readLine();//приём сообщений клиентом
+                System.out.println(textFromServer);//вывод сообщения клиенту
+                while (!clientSocket.isClosed()) {
+                    String textFromServer2 = in.readLine();
+                    System.out.println(textFromServer2);
+                    if (exit) {
+                        in.close();
+                        clientSocket.close();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         };
     }
@@ -47,13 +73,4 @@ public class Client {
         return sb.toString();
     }
 
-    public static void answer(PrintWriter out, BufferedReader in, BufferedReader reader) throws IOException, InterruptedException {
-        String textFromServer = in.readLine();
-        System.out.println(textFromServer);
-        String answerR = reader.readLine();
-        out.println(answerR);
-        if (answerR.equals("/exit")) {
-            exit = true;
-        }
-    }
 }
