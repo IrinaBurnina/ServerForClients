@@ -4,48 +4,50 @@ import java.net.Socket;
 public class Client {
     public static boolean exit;
 
-    public static void main(String[] args) throws InterruptedException {
-        Thread sending = new Thread(clientSendMessage());
-        Thread getting = new Thread(clientGetMessage());
+    public static void main(String[] args) throws IOException, InterruptedException {
+        Socket clientSocket = new Socket(Settings.hostFromFile("settings.txt"),
+                Integer.parseInt(Settings.portNumberFromFile("settings.txt")));
+        Thread sending = new Thread(clientSendMessage(clientSocket));
+        Thread getting = new Thread(clientGetMessage(clientSocket));
         sending.start();
         getting.start();
+        sending.join();
+        getting.join();
     }
 
-    public static Runnable clientSendMessage() {
+    public static Runnable clientSendMessage(Socket clientSocket) {
         return () -> {
-            String host = "netology.homework";
-            try (Socket clientSocket = new Socket(host, Integer.parseInt(portNumberFromFile()));
-                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                  BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-                final String name = reader.readLine();//ответ серверу
+                final String name = reader.readLine();
                 out.println(name);
                 if (name.equals("/exit")) {
                     exit = true;
                 }
                 while (!clientSocket.isClosed()) {
-                    String answerText = reader.readLine();
-                    out.println(name + " ==== " + answerText);
-                    if (answerText.equals("/exit")) {
-                        exit = true;
-                    }
-                    if (exit) {
-                        out.close();
-                        clientSocket.close();
+                    String textOut = reader.readLine();
+                    if (textOut != null) {
+                        out.println(textOut);
+                        if (textOut.equals("/exit")) {
+                            exit = true;
+                        }
+                        if (exit) {
+                            out.close();
+                            clientSocket.close();
+                        }
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         };
     }
 
-    public static Runnable clientGetMessage() {
+    public static Runnable clientGetMessage(Socket clientSocket) {
         return () -> {
-            String host = "netology.homework";
-            try (Socket clientSocket = new Socket(host, Integer.parseInt(portNumberFromFile()));
-                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
-                String textFromServer = in.readLine();//приём сообщений клиентом
-                System.out.println(textFromServer);//вывод сообщения клиенту
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                String textFromServer = in.readLine();
+                System.out.println(textFromServer);
                 while (!clientSocket.isClosed()) {
                     String textFromServer2 = in.readLine();
                     System.out.println(textFromServer2);
@@ -55,22 +57,8 @@ public class Client {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         };
     }
-
-    public static String portNumberFromFile() {
-        StringBuilder sb = new StringBuilder();
-        try (FileInputStream fileInputStream = new FileInputStream("settings.txt")) {
-            int i;
-            while ((i = fileInputStream.read()) != -1) {
-                sb.append((char) i);
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-        return sb.toString();
-    }
-
 }
