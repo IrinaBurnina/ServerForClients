@@ -72,4 +72,4 @@ What is ur name?
 
 1. Файл с настройками не перезаписывается.
 2. Сервер работает с несколькими клиентами, как параллельно, так и последовательно.
-   ! [](https://github.com/IrinaBurnina/ServerForClients/pictures/secondIteration.PNG)
+   ![](https://github.com/IrinaBurnina/ServerForClients/pictures/secondIteration.PNG)
