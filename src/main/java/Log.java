@@ -31,7 +31,7 @@ public class Log {
         String textLine = "[" + userName + "#" + freq.get(userName) + "]" +
                 LocalDateTime.now() + " === " + msg;
         try (FileOutputStream fos = new FileOutputStream(fileLogName, true)) {
-            byte[] bytes = textLine.getBytes();
+            byte[] bytes = (textLine + "\n").getBytes();
             fos.write(bytes, 0, bytes.length);
         } catch (IOException e) {
             System.out.println(e.getMessage());

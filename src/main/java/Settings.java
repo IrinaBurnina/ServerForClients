@@ -5,23 +5,19 @@ import java.io.IOException;
 
 public class Settings {
     public static int port = 8089;
-    public static String host = "netology.homework";
+    public static String host = "localhost";
 
     public static void writeToSettings(String fileName) {
         File settings = new File(fileName);
         if (!settings.exists()) {
-            try {
+            try (FileOutputStream fos = new FileOutputStream(fileName)) {
                 settings.createNewFile();
+                String portNumberAndHost = (port + " " + host);
+                byte[] bytes = portNumberAndHost.getBytes();
+                fos.write(bytes, 0, bytes.length);
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
-        }
-        try (FileOutputStream fos = new FileOutputStream(fileName)) {
-            String portNumberAndHost = (port + " " + host);
-            byte[] bytes = portNumberAndHost.getBytes();
-            fos.write(bytes, 0, bytes.length);
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
         }
     }
 

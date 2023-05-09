@@ -11,6 +11,7 @@ public class Server {
     public static String clientName;
     public static String textFromClient;
     public static Map<Socket, String> clientsBase = new ConcurrentHashMap<>();
+    ExecutorService group = Executors.newFixedThreadPool(5);
     static Log log;
 
     static {
@@ -23,29 +24,38 @@ public class Server {
 
     static String server = "Сервер ";
 
-    public static void main(String[] args) throws IOException {
+    public void start() throws IOException {
         Settings.writeToSettings("settings.txt");
         log.log(server, "server is started. Let's go!");
         try (ServerSocket serverSocket =
                      new ServerSocket(Integer.parseInt(Settings.portNumberFromFile("settings.txt")))) {
             while (true) {
-                ExecutorService group = Executors.newFixedThreadPool(5);
-                group.execute(forGroup(serverSocket));
+                Socket clientSocket = serverSocket.accept();
+                Thread thread = new Thread(forGroup(clientSocket));
+                group.execute(thread);
             }
         }
     }
 
-    public static Runnable forGroup(ServerSocket serverSocket) {
+    public static Runnable forGroup(Socket clientSocket) {
         return () -> {
-            try (Socket clientSocket = serverSocket.accept();
-                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))
+            try (
+                    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))
             ) {
                 clientName = introduce(out, in, server);
                 clientsBase.put(clientSocket, clientName);
-                while (!clientSocket.isClosed()) {
-                    receiving(in, out, clientSocket);
+                while (!clientSocket.isClosed() && clientsBase.containsKey(clientSocket)) {
+                    receiving(in, clientSocket);
                     sendMessageToAll(clientSocket);
+                    if (textFromClient.equals("/exit")) {
+                        System.out.println(clientsBase.get(clientSocket) + " leave chat. Bye!");
+                        clientsBase.remove(clientSocket);
+                        in.close();
+                        out.close();
+                    } else {
+                        out.println(clientsBase.get(clientSocket) + ", You can write something else or \"/exit\".");
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -67,16 +77,10 @@ public class Server {
         return userName;
     }
 
-    public static void receiving(BufferedReader in, PrintWriter out, Socket clientSocket) throws IOException {
-        textFromClient = in.readLine();//клиент написал сообщение
-        log.log(clientsBase.get(clientSocket), textFromClient);//сервер его вывел
-        if (textFromClient.equals("/exit")) {  //если сообшение содержит выход
-            System.out.println(clientsBase.get(clientSocket) + " leave chat. Bye!");  //прощаемся
-            in.close();
-            out.close();
-        } else if (textFromClient != null) {  //если не содержит, то отправляем ответ сервера
-            out.println(clientsBase.get(clientSocket) + ", You can write something else or \"/exit\".");
-        }
+    public static void receiving(BufferedReader in, Socket clientSocket) throws IOException {
+        textFromClient = in.readLine();
+        log.log(clientsBase.get(clientSocket), textFromClient);
+
     }
 
     public static void sendMessageToAll(Socket clientSocket) throws IOException {
