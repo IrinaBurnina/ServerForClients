@@ -57,19 +57,19 @@ What is ur name?
 ````
 
 10. В общем чате появляются: вопрос об имени, отправленное имя и приветствие от сервера.
-    ![](https://github.com/IrinaBurnina/ServerForClients/pictures/Chat.PNG)
+    ![](https://github.com/IrinaBurnina/ServerForClients/blob/main/pictures/Chat.PNG)
 11. Сообщение с приветствием и краткой инструкцией в ответ (сообщение №3 от сервера) также поступило подключенному
     клиенту.
-    ![](https://github.com/IrinaBurnina/ServerForClients/pictures/ClientIsClosed.PNG)
+    ![](https://github.com/IrinaBurnina/ServerForClients/blob/main/pictures/ClientIsClosed.PNG)
 12. В ответ клиент отправляет своё сообщение, которое сервер выводит в общий чат
-    ![](https://github.com/IrinaBurnina/ServerForClients/pictures/ServerPic.PNG)
+    ![](https://github.com/IrinaBurnina/ServerForClients/blob/main/pictures/ServerPic.PNG)
     и каждому клиенту:
-    ![](https://github.com/IrinaBurnina/ServerForClients/pictures/Chatting.PNG).
+    ![](https://github.com/IrinaBurnina/ServerForClients/blob/main/pictures/Chatting.PNG).
 13. После для прекращения подключения к серверу клиент вводит /exit, прощается и покидает чат.
-    ![](https://github.com/IrinaBurnina/ServerForClients/pictures/ExitOnOneClient.PNG)
+    ![](https://github.com/IrinaBurnina/ServerForClients/blob/main/pictures/ExitOnOneClient.PNG)
 
 ## После корректировки по замечаниям:
 
 1. Файл с настройками не перезаписывается.
 2. Сервер работает с несколькими клиентами, как параллельно, так и последовательно.
-   ![](https://github.com/IrinaBurnina/ServerForClients/pictures/secondIteration.PNG)
+   ![](https://github.com/IrinaBurnina/ServerForClients/blob/main/pictures/secondIteration.PNG)
